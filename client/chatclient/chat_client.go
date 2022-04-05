@@ -51,7 +51,7 @@ type Message struct {
 }
 
 // SendMessage sends message contained sender's login, recipient's login,
-// creation timestamp, body-content and prints response from server. 
+// creation timestamp, body-content and prints response from server.
 func (c *Client) SendMessage(m *Message) {
 	mes := &pb.Message{LoginFrom: m.LoginFrom, LoginTo: m.LoginTo, CreatedAt: m.CreatedAt, Body: m.Body}
 	ctx := context.Background()
@@ -62,7 +62,7 @@ func (c *Client) SendMessage(m *Message) {
 	log.Printf("Status: %s", r.Status)
 }
 
-// Gets and prints all messages, given in stream by subscription. 
+// Gets and prints all messages, given in stream by subscription.
 func (c *Client) Subscribe(login string) {
 	ctx := context.Background()
 	stream, err := c.client.Subscribe(ctx, &pb.SubscribeRequest{Login: login})
