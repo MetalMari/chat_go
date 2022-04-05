@@ -20,7 +20,7 @@ git clone https://github.com/MetalMari/chat_go.git
 ```
 Go to `chat_protos` directory and update submodules:
 ```bash
-cd chat_grpc/chat_protos
+cd chat_go/chat_protos
 git submodule update --init --recursive
 ```
 
