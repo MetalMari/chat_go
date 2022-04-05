@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	cl "chat_go/client/chatclient"
 )
@@ -28,7 +29,8 @@ func main() {
 	case "users":
 		client.GetUsers()
 	case "message":
-		m := cl.Message{LoginFrom: *from, LoginTo: *to, CreatedAt: 1234, Body: *body}
+		created_at := int32(time.Now().Unix())
+		m := cl.Message{LoginFrom: *from, LoginTo: *to, CreatedAt: created_at, Body: *body}
 		client.SendMessage(&m)
 	case "subscribe":
 		client.Subscribe(*login)
