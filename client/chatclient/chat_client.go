@@ -57,7 +57,7 @@ func (c *Client) SendMessage(m *Message) {
 	ctx := context.Background()
 	r, err := c.client.SendMessage(ctx, &pb.SendMessageRequest{Message: mes})
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Fatalf("could not send message: %v", err)
 	}
 	log.Printf("Status: %s", r.Status)
 }
