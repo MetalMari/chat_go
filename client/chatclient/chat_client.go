@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+
+
 type Client struct {
 	Endpoint string
 
@@ -32,15 +34,21 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
+// var Users []struct{
+// 	Login string
+// 	FullName string
+// }
+
 // GetUsers gets and prints list of users.
-func (c *Client) GetUsers() {
+func (c *Client) GetUsers() (Users []*pb.User, err error) {
 	ctx := context.Background()
 
 	r, err := c.client.GetUsers(ctx, &pb.GetUsersRequest{})
 	if err != nil {
 		log.Fatalf("could not get users: %v", err)
 	}
-	log.Printf("Users: %s", r.Users)
+	Users = r.Users
+	return Users, nil
 }
 
 type Message struct {
@@ -52,18 +60,19 @@ type Message struct {
 
 // SendMessage sends message contained sender's login, recipient's login,
 // creation timestamp, body-content and prints response from server.
-func (c *Client) SendMessage(m *Message) {
+func (c *Client) SendMessage(m *Message) (Status string, err error) {
 	mes := &pb.Message{LoginFrom: m.LoginFrom, LoginTo: m.LoginTo, CreatedAt: m.CreatedAt, Body: m.Body}
 	ctx := context.Background()
 	r, err := c.client.SendMessage(ctx, &pb.SendMessageRequest{Message: mes})
 	if err != nil {
 		log.Fatalf("could not send message: %v", err)
 	}
-	log.Printf("Status: %s", r.Status)
+	Status = r.Status
+	return Status, err
 }
 
 // Gets and prints all messages, given in stream by subscription.
-func (c *Client) Subscribe(login string) {
+func (c *Client) Subscribe(login string) (Messages []*pb.Message, err error) {
 	ctx := context.Background()
 	stream, err := c.client.Subscribe(ctx, &pb.SubscribeRequest{Login: login})
 	if err != nil {
@@ -77,6 +86,7 @@ func (c *Client) Subscribe(login string) {
 		if err != nil {
 			log.Fatalf("Cannot receive: %v", err)
 		}
-		log.Printf("Message: %s", mes)
+		Messages = append(Messages, mes)
 	}
+	return Messages, nil
 }

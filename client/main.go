@@ -27,13 +27,25 @@ func main() {
 
 	switch *a {
 	case "users":
-		client.GetUsers()
+		users, err := client.GetUsers()
+		if err != nil {
+			log.Fatalf("didn't get users: %v", err)
+		}
+		log.Printf("Users: %s", users)
 	case "message":
 		created_at := int32(time.Now().Unix())
 		m := cl.Message{LoginFrom: *from, LoginTo: *to, CreatedAt: created_at, Body: *body}
-		client.SendMessage(&m)
+		resp, err:= client.SendMessage(&m)
+		if err != nil {
+			log.Fatalf("didn't send message: %v", err)
+		}
+		log.Printf("Status: %s", resp)
 	case "subscribe":
-		client.Subscribe(*login)
+		messages, err := client.Subscribe(*login)
+		if err != nil {
+			log.Fatalf("didn't get messages: %v", err)
+		}
+		log.Printf("Messages: %s", messages)
 	case "":
 		log.Printf("Choose action")
 	}
