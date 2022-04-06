@@ -17,14 +17,10 @@ var (
 	a     = flag.String("a", "", "Action")
 )
 
-func main() {
+// submitRequest calls the function and prints result
+// depends on chosen action
+func submitRequest(client *cl.Client) {
 	flag.Parse()
-	client, err := cl.NewClient(*addr)
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer client.Close()
-
 	switch *a {
 	case "users":
 		users, err := client.GetUsers()
@@ -35,7 +31,7 @@ func main() {
 	case "message":
 		created_at := int32(time.Now().Unix())
 		m := cl.Message{LoginFrom: *from, LoginTo: *to, CreatedAt: created_at, Body: *body}
-		resp, err:= client.SendMessage(&m)
+		resp, err := client.SendMessage(&m)
 		if err != nil {
 			log.Fatalf("didn't send message: %v", err)
 		}
@@ -49,4 +45,14 @@ func main() {
 	case "":
 		log.Printf("Choose action")
 	}
+}
+
+func main() {
+	flag.Parse()
+	client, err := cl.NewClient(*addr)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer client.Close()
+	submitRequest(client)
 }
