@@ -28,8 +28,8 @@ func (s *server) GetUsers(ctx context.Context, in *pb.GetUsersRequest) (*pb.GetU
 
 // SendMessage gets message and returns simple string if the message from client is received.
 func (s *server) SendMessage(ctx context.Context, in *pb.SendMessageRequest) (*pb.SendMessageReply, error) {
-	return &pb.SendMessageReply{Status: in.Message.LoginTo +
-		" received message from " + in.Message.LoginFrom}, nil
+	statusMessage := in.Message.LoginTo + " received message from " + in.Message.LoginFrom
+	return &pb.SendMessageReply{Status: statusMessage}, nil
 }
 
 // Subscribe returns stream of messages by subscription.
