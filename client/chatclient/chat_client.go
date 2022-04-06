@@ -47,8 +47,7 @@ func (c *Client) GetUsers() (Users []*pb.User, err error) {
 	if err != nil {
 		log.Fatalf("could not get users: %v", err)
 	}
-	Users = r.Users
-	return Users, nil
+	return r.Users, nil
 }
 
 type Message struct {
@@ -67,8 +66,7 @@ func (c *Client) SendMessage(m *Message) (Status string, err error) {
 	if err != nil {
 		log.Fatalf("could not send message: %v", err)
 	}
-	Status = r.Status
-	return Status, err
+	return r.Status, err
 }
 
 // Gets and prints all messages, given in stream by subscription.
