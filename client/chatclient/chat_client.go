@@ -32,7 +32,7 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-// GetUsers gets and prints list of users.
+// GetUsers gets list of users.
 func (c *Client) GetUsers() (Users []*pb.User, err error) {
 	ctx := context.Background()
 
@@ -51,7 +51,7 @@ type Message struct {
 }
 
 // SendMessage sends message contained sender's login, recipient's login,
-// creation timestamp, body-content and prints response from server.
+// creation timestamp, body-content and gets response from server.
 func (c *Client) SendMessage(m *Message) (Status string, err error) {
 	mes := &pb.Message{LoginFrom: m.LoginFrom, LoginTo: m.LoginTo, CreatedAt: m.CreatedAt, Body: m.Body}
 	ctx := context.Background()
@@ -62,7 +62,7 @@ func (c *Client) SendMessage(m *Message) (Status string, err error) {
 	return r.Status, err
 }
 
-// Gets and prints all messages, given in stream by subscription.
+// Gets all messages, given in stream by subscription.
 func (c *Client) Subscribe(login string, channel chan *pb.Message) {
 	ctx := context.Background()
 	stream, err := c.client.Subscribe(ctx, &pb.SubscribeRequest{Login: login})
@@ -75,7 +75,6 @@ func (c *Client) Subscribe(login string, channel chan *pb.Message) {
 			mes, err := stream.Recv()
 			if err == io.EOF {
 				break
-
 			}
 			if err != nil {
 				log.Fatalf("Cannot receive: %v", err)
