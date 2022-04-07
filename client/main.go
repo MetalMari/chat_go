@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	pb "chat_go/chat_protos"
 	cl "chat_go/client/chatclient"
 )
 
@@ -31,17 +32,21 @@ func submitRequest(client *cl.Client) {
 	case "message":
 		created_at := int32(time.Now().Unix())
 		m := cl.Message{LoginFrom: *from, LoginTo: *to, CreatedAt: created_at, Body: *body}
+
 		resp, err := client.SendMessage(&m)
+
 		if err != nil {
 			log.Fatalf("didn't send message: %v", err)
 		}
 		log.Printf("Status: %s", resp)
 	case "subscribe":
-		messages, err := client.Subscribe(*login)
-		if err != nil {
-			log.Fatalf("didn't get messages: %v", err)
+		channel := make(chan *pb.Message)
+
+		go client.Subscribe(*login, channel)
+
+		for message := range channel {
+			log.Printf("Message: %v", message)
 		}
-		log.Printf("Messages: %s", messages)
 	case "":
 		log.Printf("Choose action")
 	}

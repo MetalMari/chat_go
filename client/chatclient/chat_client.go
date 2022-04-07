@@ -10,8 +10,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-
-
 type Client struct {
 	Endpoint string
 
@@ -33,11 +31,6 @@ func NewClient(endpoint string) (*Client, error) {
 func (c *Client) Close() error {
 	return c.conn.Close()
 }
-
-// var Users []struct{
-// 	Login string
-// 	FullName string
-// }
 
 // GetUsers gets and prints list of users.
 func (c *Client) GetUsers() (Users []*pb.User, err error) {
@@ -70,21 +63,25 @@ func (c *Client) SendMessage(m *Message) (Status string, err error) {
 }
 
 // Gets and prints all messages, given in stream by subscription.
-func (c *Client) Subscribe(login string) (Messages []*pb.Message, err error) {
+func (c *Client) Subscribe(login string, channel chan *pb.Message) {
 	ctx := context.Background()
 	stream, err := c.client.Subscribe(ctx, &pb.SubscribeRequest{Login: login})
 	if err != nil {
 		log.Fatalf("Cannot receive: %v", err)
 	}
-	for {
-		mes, err := stream.Recv()
-		if err == io.EOF {
-			break
+
+	go func() {
+		for {
+			mes, err := stream.Recv()
+			if err == io.EOF {
+				break
+
+			}
+			if err != nil {
+				log.Fatalf("Cannot receive: %v", err)
+			}
+			channel <- mes
 		}
-		if err != nil {
-			log.Fatalf("Cannot receive: %v", err)
-		}
-		Messages = append(Messages, mes)
-	}
-	return Messages, nil
+		close(channel)
+	}()
 }

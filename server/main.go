@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	pb "chat_go/chat_protos"
 	"google.golang.org/grpc"
@@ -34,11 +35,15 @@ func (s *server) SendMessage(ctx context.Context, in *pb.SendMessageRequest) (*p
 
 // Subscribe returns stream of messages by subscription.
 func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeServer) error {
-	messages := [2]*pb.Message{
+	messages := [4]*pb.Message{
 		{LoginFrom: resp.Login, LoginTo: "B", CreatedAt: 1234, Body: "Hello, B!"},
 		{LoginFrom: resp.Login, LoginTo: "D", CreatedAt: 1234, Body: "Hello, D!"},
+		{LoginFrom: resp.Login, LoginTo: "C", CreatedAt: 1234, Body: "Hello, C!"},
+		{LoginFrom: resp.Login, LoginTo: "F", CreatedAt: 1234, Body: "Hello, F!"},
 	}
 	for _, message := range messages {
+		time.Sleep(4 * time.Second)
+		log.Println("Send message..")
 		if err := stream.Send(message); err != nil {
 			return err
 		}
