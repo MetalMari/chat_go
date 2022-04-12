@@ -15,7 +15,7 @@ var (
 	to    = flag.String("to", "B", "Login to")
 	body  = flag.String("body", "Hello", "Message body")
 	login = flag.String("login", "userA", "Login to subscribe")
-	a     = flag.String("a", "", "Action")
+	a     = flag.String("action", "", "Action")
 )
 
 // submitRequest calls the function and prints result

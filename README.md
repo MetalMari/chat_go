@@ -47,13 +47,13 @@ go run client/main.go
 Choose action:
 1. to get list of users:
 ```bash
-go run client/main.go --a=users
+go run client/main.go --action=users
 ```
 2. to send message:
 ```bash
-go run client/main.go --a=message --from=login_from --to==login_to --body="Message content"
+go run client/main.go --action=message --from=login_from --to==login_to --body="Message content"
 ```
 3. to subscribe for getting messages:
 ```bash
-go run client/main.go --a=subscribe --login=login_to_subscribe
+go run client/main.go --action=subscribe --login=login_to_subscribe
 ```
