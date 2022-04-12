@@ -21,7 +21,6 @@ var (
 // submitRequest calls the function and prints result
 // depends on chosen action
 func submitRequest(client *cl.Client) {
-	flag.Parse()
 	switch *a {
 	case "users":
 		users, err := client.GetUsers()

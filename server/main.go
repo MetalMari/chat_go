@@ -41,14 +41,16 @@ func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeSe
 		{LoginFrom: resp.Login, LoginTo: "C", CreatedAt: 1234, Body: "Hello, C!"},
 		{LoginFrom: resp.Login, LoginTo: "F", CreatedAt: 1234, Body: "Hello, F!"},
 	}
-	for _, message := range messages {
-		time.Sleep(4 * time.Second)
-		log.Println("Send message..")
-		if err := stream.Send(message); err != nil {
-			return err
+	defer log.Printf("Finish subscription for user %v", resp.Login)
+	for {
+		for _, message := range messages {
+			time.Sleep(4 * time.Second)
+			log.Println("Send message..")
+			if err := stream.Send(message); err != nil {
+				return err
+			}
 		}
 	}
-	return nil
 }
 
 func main() {
