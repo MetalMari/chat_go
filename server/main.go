@@ -19,6 +19,7 @@ const (
 )
 
 var (
+	serv_host = flag.String("serv_host", "localhost", "The server host")
 	serv_port = flag.Int("serv_port", 50051, "The server port")
 
 	stor_host = flag.String("stor_host", "localhost", "The storage host")
@@ -109,7 +110,7 @@ func fillUsers(stor *st.Storage) {
 
 func main() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *serv_port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *serv_host, *serv_port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
