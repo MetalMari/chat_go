@@ -15,14 +15,14 @@ const(
 )
 
 // Base for creating storages. 
-type Storage struct {
+type EtcdStorage struct {
 	Endpoints []string
 
 	storage clientv3.Client
 }
 
-// EtcdStorage creates new Storage using etcd client/v3. 
-func EtcdStorage(endpoints []string, dialTimeout time.Duration) (*Storage, error) {
+// NewEtcdStorage creates new Storage using etcd client/v3. 
+func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,
 		DialTimeout: dialTimeout,
@@ -30,16 +30,16 @@ func EtcdStorage(endpoints []string, dialTimeout time.Duration) (*Storage, error
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &Storage{Endpoints: endpoints, storage: *cli}, nil
+	return &EtcdStorage{Endpoints: endpoints, storage: *cli}, nil
 }
 
 // Close closes connection with etcd. 
-func (s *Storage) Close() error {
+func (s *EtcdStorage) Close() error {
 	return s.storage.Close()
 }
 
 // CreateUser saves user object into etcd using user key. 
-func (s *Storage) CreateUser(u User) error {
+func (s *EtcdStorage) CreateUser(u User) error {
 	ctx := context.Background()
 	k :=  USER_PREFIX + u.Login
 	v, err := json.Marshal(u)
@@ -51,7 +51,7 @@ func (s *Storage) CreateUser(u User) error {
 }
 
 // GetUsers returns list of users. 
-func (s *Storage) GetUsers() (users []User, err error) {
+func (s *EtcdStorage) GetUsers() (users []User, err error) {
 	ctx := context.Background()
 	opts := []clientv3.OpOption{
 		clientv3.WithPrefix(),
@@ -73,7 +73,7 @@ func (s *Storage) GetUsers() (users []User, err error) {
 
 // CreateMessage saves message object into etcd using message key. 
 // Message key includes user login and timestamp created_at to be unique. 
-func (s *Storage) CreateMessage(m Message) error {
+func (s *EtcdStorage) CreateMessage(m Message) error {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
 	v, err := json.Marshal(m)
@@ -86,7 +86,7 @@ func (s *Storage) CreateMessage(m Message) error {
 }
 
 // GetMessages returns list of messages for specific user. 
-func (s *Storage) GetMessages(login string) (messages []Message, err error) {
+func (s *EtcdStorage) GetMessages(login string) (messages []Message, err error) {
 	ctx := context.Background()
 	opts := []clientv3.OpOption{
 		clientv3.WithPrefix(),
@@ -109,7 +109,7 @@ func (s *Storage) GetMessages(login string) (messages []Message, err error) {
 }
 
 // DeleteMessage deletes message from storage. 
-func (s *Storage) DeleteMessage(m Message) {
+func (s *EtcdStorage) DeleteMessage(m Message) {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
 	s.storage.Delete(ctx, k)

@@ -19,17 +19,17 @@ const (
 )
 
 var (
-	serv_host = flag.String("serv_host", "localhost", "The server host")
-	serv_port = flag.Int("serv_port", 50051, "The server port")
+	servHost = flag.String("servHost", "localhost", "The server host")
+	servPort = flag.Int("servPort", 50051, "The server port")
 
-	stor_host = flag.String("stor_host", "localhost", "The storage host")
-	stor_port = flag.Int("stor_port", 2379, "The storage port")
+	storHost = flag.String("storHost", "localhost", "The storage host")
+	storPort = flag.Int("storPort", 2379, "The storage port")
 )
 
 // server is used to implement chat.ChatServer.
 type server struct {
 	pb.UnimplementedChatServer
-	storage st.Storage
+	storage st.EtcdStorage
 }
 
 // GetUsers returns list of users.
@@ -82,10 +82,10 @@ func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeSe
 }
 
 // Creates storage on defined address and port.
-func createStorage(stor_host string, stor_port int) (storage *st.Storage) {
+func createStorage(stor_host string, stor_port int) (storage *st.EtcdStorage) {
 	endpoint := fmt.Sprintf("%v:%v", stor_host, stor_port)
 	endpoints := []string{endpoint}
-	stor, err := st.EtcdStorage(endpoints, dialTimeout)
+	stor, err := st.NewEtcdStorage(endpoints, dialTimeout)
 	if err != nil {
 		log.Fatalf("failed to create storage: %v", err)
 	}
@@ -93,7 +93,7 @@ func createStorage(stor_host string, stor_port int) (storage *st.Storage) {
 }
 
 // Creates users and saves them to storage.
-func fillUsers(stor *st.Storage) {
+func fillUsers(stor *st.EtcdStorage) {
 	users, err := stor.GetUsers()
 	if err != nil {
 		log.Fatal(err)
@@ -110,12 +110,12 @@ func fillUsers(stor *st.Storage) {
 
 func main() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *serv_host, *serv_port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *servHost, *servPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	storage := createStorage(*stor_host, *stor_port)
+	storage := createStorage(*storHost, *storPort)
 	fillUsers(storage)
 	pb.RegisterChatServer(s, &server{storage: *storage})
 	log.Printf("server listening at %v", lis.Addr())
