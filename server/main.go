@@ -38,11 +38,11 @@ func (s *server) GetUsers(ctx context.Context, in *pb.GetUsersRequest) (*pb.GetU
 	if err != nil {
 		log.Fatal(err)
 	}
-	var uu []*pb.User
+	var usersList []*pb.User
 	for _, u := range users {
-		uu = append(uu, &pb.User{Login: u.Login, FullName: u.FullName})
+		usersList = append(usersList, &pb.User{Login: u.Login, FullName: u.FullName})
 	}
-	return &pb.GetUsersReply{Users: uu}, nil
+	return &pb.GetUsersReply{Users: usersList}, nil
 }
 
 // SendMessage gets message and returns simple string if the message from client is received.
