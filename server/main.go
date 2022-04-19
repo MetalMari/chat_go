@@ -29,7 +29,7 @@ var (
 // server is used to implement chat.ChatServer.
 type server struct {
 	pb.UnimplementedChatServer
-	storage st.EtcdStorage
+	storage st.Storage
 }
 
 // GetUsers returns list of users.
@@ -85,7 +85,7 @@ func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeSe
 }
 
 // Creates storage on defined address and port.
-func createStorage(stor_host string, stor_port int) (storage *st.EtcdStorage) {
+func createStorage(stor_host string, stor_port int) (storage st.Storage) {
 	endpoint := fmt.Sprintf("%v:%v", stor_host, stor_port)
 	endpoints := []string{endpoint}
 	stor, err := st.NewEtcdStorage(endpoints, dialTimeout)
@@ -96,7 +96,7 @@ func createStorage(stor_host string, stor_port int) (storage *st.EtcdStorage) {
 }
 
 // Creates users and saves them to storage.
-func fillUsers(stor *st.EtcdStorage) {
+func fillUsers(stor st.Storage) {
 	users, err := stor.GetUsers()
 	if err != nil {
 		log.Fatal(err)
@@ -118,9 +118,12 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	storage := createStorage(*storHost, *storPort)
+	var storage st.Storage
+	var etcdStorage *st.EtcdStorage
+	storage = etcdStorage
+	storage = createStorage(*storHost, *storPort)
 	fillUsers(storage)
-	pb.RegisterChatServer(s, &server{storage: *storage})
+	pb.RegisterChatServer(s, &server{storage: storage})
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

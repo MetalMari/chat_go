@@ -14,7 +14,27 @@ const(
 	MESSAGE_PREFIX = "message."
 )
 
-// Base for creating storages. 
+// Base interface for creating storages. All storages need to provide methods 
+// for creating users, getting all users, creating messages, 
+// getting all messages per user, removing specific message for specific user. 
+type Storage interface {
+	// CreateUser saves user in storage. 
+	CreateUser(u User) error
+
+	// GetUsers returns users list from storage. 
+	GetUsers() (users []User, err error)
+
+	// CreateMessage saves messages in storage. 
+	CreateMessage(m Message) error
+
+	// GetMessages retrieves user's login and returns list of messages from storage. 
+	GetMessages(login string) (messages []Message, err error)
+
+	// DeleteMessage deletes user-read messages. 
+	DeleteMessage(m Message) (*clientv3.DeleteResponse, error)
+}
+
+// Base for creating etcd storages. 
 type EtcdStorage struct {
 	Endpoints []string
 
