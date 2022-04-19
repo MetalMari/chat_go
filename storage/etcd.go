@@ -109,8 +109,8 @@ func (s *EtcdStorage) GetMessages(login string) (messages []Message, err error) 
 }
 
 // DeleteMessage deletes message from storage. 
-func (s *EtcdStorage) DeleteMessage(m Message) {
+func (s *EtcdStorage) DeleteMessage(m Message) (*clientv3.DeleteResponse, error) {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
-	s.storage.Delete(ctx, k)
+	return s.storage.Delete(ctx, k)
 }
