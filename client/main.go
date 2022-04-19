@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"log"
-	"time"
 
 	pb "chat_go/chat_protos"
 	cl "chat_go/client/chatclient"
+	st "chat_go/storage"
 )
 
 var (
@@ -29,8 +29,7 @@ func submitRequest(client *cl.Client) {
 		}
 		log.Printf("Users: %s", users)
 	case "message":
-		created_at := int32(time.Now().Unix())
-		m := cl.Message{LoginFrom: *from, LoginTo: *to, CreatedAt: created_at, Body: *body}
+		m := st.Message{LoginFrom: *from, LoginTo: *to, Body: *body}
 
 		resp, err := client.SendMessage(&m)
 

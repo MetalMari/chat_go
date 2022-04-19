@@ -6,6 +6,7 @@ import (
 	"log"
 
 	pb "chat_go/chat_protos"
+	st "chat_go/storage"
 
 	"google.golang.org/grpc"
 )
@@ -43,17 +44,10 @@ func (c *Client) GetUsers() (Users []*pb.User, err error) {
 	return r.Users, nil
 }
 
-type Message struct {
-	LoginFrom string
-	LoginTo   string
-	CreatedAt int32
-	Body      string
-}
-
 // SendMessage sends message contained sender's login, recipient's login,
 // creation timestamp, body-content and gets response from server.
-func (c *Client) SendMessage(m *Message) (Status string, err error) {
-	mes := &pb.Message{LoginFrom: m.LoginFrom, LoginTo: m.LoginTo, CreatedAt: m.CreatedAt, Body: m.Body}
+func (c *Client) SendMessage(m *st.Message) (Status string, err error) {
+	mes := &pb.Message{LoginFrom: m.LoginFrom, LoginTo: m.LoginTo, Body: m.Body}
 	ctx := context.Background()
 	r, err := c.client.SendMessage(ctx, &pb.SendMessageRequest{Message: mes})
 	if err != nil {
