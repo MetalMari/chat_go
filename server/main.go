@@ -86,8 +86,7 @@ func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeSe
 
 // Creates storage on defined address and port.
 func createStorage(stor_host string, stor_port int) (storage st.Storage) {
-	endpoint := fmt.Sprintf("%v:%v", stor_host, stor_port)
-	endpoints := []string{endpoint}
+	endpoints := []string{fmt.Sprintf("%v:%v", stor_host, stor_port)}
 	stor, err := st.NewEtcdStorage(endpoints, dialTimeout)
 	if err != nil {
 		log.Fatalf("failed to create storage: %v", err)
@@ -118,10 +117,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	var storage st.Storage
-	var etcdStorage *st.EtcdStorage
-	storage = etcdStorage
-	storage = createStorage(*storHost, *storPort)
+	storage := createStorage(*storHost, *storPort)
 	fillUsers(storage)
 	pb.RegisterChatServer(s, &server{storage: storage})
 	log.Printf("server listening at %v", lis.Addr())

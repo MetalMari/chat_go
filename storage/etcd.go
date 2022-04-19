@@ -9,39 +9,41 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-const(
-	USER_PREFIX = "user."
+const (
+	USER_PREFIX    = "user."
 	MESSAGE_PREFIX = "message."
 )
 
-// Base interface for creating storages. All storages need to provide methods 
-// for creating users, getting all users, creating messages, 
-// getting all messages per user, removing specific message for specific user. 
+// Base interface for creating storages. All storages need to provide methods
+// for creating users, getting all users, creating messages,
+// getting all messages per user, removing specific message for specific user.
 type Storage interface {
-	// CreateUser saves user in storage. 
+	// CreateUser saves user in storage.
 	CreateUser(u User) error
 
-	// GetUsers returns users list from storage. 
+	// GetUsers returns users list from storage.
 	GetUsers() (users []User, err error)
 
-	// CreateMessage saves messages in storage. 
+	// CreateMessage saves messages in storage.
 	CreateMessage(m Message) error
 
-	// GetMessages retrieves user's login and returns list of messages from storage. 
+	// GetMessages retrieves user's login and returns list of messages from storage.
 	GetMessages(login string) (messages []Message, err error)
 
-	// DeleteMessage deletes user-read messages. 
+	// DeleteMessage deletes user-read messages.
 	DeleteMessage(m Message) (*clientv3.DeleteResponse, error)
 }
 
-// Base for creating etcd storages. 
+// Base for creating etcd storages.
 type EtcdStorage struct {
 	Endpoints []string
 
 	storage clientv3.Client
 }
 
-// NewEtcdStorage creates new Storage using etcd client/v3. 
+var _ Storage = &EtcdStorage{}
+
+// NewEtcdStorage creates new Storage using etcd client/v3.
 func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,
@@ -53,15 +55,15 @@ func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage
 	return &EtcdStorage{Endpoints: endpoints, storage: *cli}, nil
 }
 
-// Close closes connection with etcd. 
+// Close closes connection with etcd.
 func (s *EtcdStorage) Close() error {
 	return s.storage.Close()
 }
 
-// CreateUser saves user object into etcd using user key. 
+// CreateUser saves user object into etcd using user key.
 func (s *EtcdStorage) CreateUser(u User) error {
 	ctx := context.Background()
-	k :=  USER_PREFIX + u.Login
+	k := USER_PREFIX + u.Login
 	v, err := json.Marshal(u)
 	if err != nil {
 		panic(err)
@@ -70,7 +72,7 @@ func (s *EtcdStorage) CreateUser(u User) error {
 	return nil
 }
 
-// GetUsers returns list of users. 
+// GetUsers returns list of users.
 func (s *EtcdStorage) GetUsers() (users []User, err error) {
 	ctx := context.Background()
 	opts := []clientv3.OpOption{
@@ -91,8 +93,8 @@ func (s *EtcdStorage) GetUsers() (users []User, err error) {
 	return users, nil
 }
 
-// CreateMessage saves message object into etcd using message key. 
-// Message key includes user login and timestamp created_at to be unique. 
+// CreateMessage saves message object into etcd using message key.
+// Message key includes user login and timestamp created_at to be unique.
 func (s *EtcdStorage) CreateMessage(m Message) error {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
@@ -105,7 +107,7 @@ func (s *EtcdStorage) CreateMessage(m Message) error {
 	return nil
 }
 
-// GetMessages returns list of messages for specific user. 
+// GetMessages returns list of messages for specific user.
 func (s *EtcdStorage) GetMessages(login string) (messages []Message, err error) {
 	ctx := context.Background()
 	opts := []clientv3.OpOption{
@@ -128,7 +130,7 @@ func (s *EtcdStorage) GetMessages(login string) (messages []Message, err error) 
 	return messages, nil
 }
 
-// DeleteMessage deletes message from storage. 
+// DeleteMessage deletes message from storage.
 func (s *EtcdStorage) DeleteMessage(m Message) (*clientv3.DeleteResponse, error) {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
