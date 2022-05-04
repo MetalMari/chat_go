@@ -74,6 +74,7 @@ StyleCopReport.xml
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml
+*coverage.out
 
 # Click-Once directory
 publish/
