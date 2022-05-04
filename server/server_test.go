@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	// "errors"
 	"fmt"
 
 	"reflect"
@@ -14,7 +13,6 @@ import (
 	st "chat_go/storage"
 
 	"github.com/stretchr/testify/assert"
-	// "google.golang.org/grpc"
 )
 
 // Tests 'GetUsers' method.
