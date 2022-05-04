@@ -31,7 +31,7 @@ type Storage interface {
 	GetMessages(login string) (messages []Message, err error)
 
 	// DeleteMessage deletes user-read messages.
-	DeleteMessage(m Message) (*clientv3.DeleteResponse, error)
+	DeleteMessage(m Message) error
 }
 
 // Base for creating etcd storages.
@@ -131,8 +131,9 @@ func (s *EtcdStorage) GetMessages(login string) (messages []Message, err error) 
 }
 
 // DeleteMessage deletes message from storage.
-func (s *EtcdStorage) DeleteMessage(m Message) (*clientv3.DeleteResponse, error) {
+func (s *EtcdStorage) DeleteMessage(m Message) error {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
-	return s.storage.Delete(ctx, k)
+	_, err := s.storage.Delete(ctx, k)
+	return err
 }
