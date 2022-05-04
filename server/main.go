@@ -76,7 +76,7 @@ func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeSe
 			if err := stream.Send(message); err != nil {
 				return err
 			}
-			_, err := s.storage.DeleteMessage(mes)
+			err := s.storage.DeleteMessage(mes)
 			if err != nil {
 				log.Fatal(err)
 			}
