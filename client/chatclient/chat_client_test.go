@@ -1,7 +1,6 @@
 package chatclient
 
 import (
-	"context"
 	"testing"
 
 	pb "chat_go/chat_protos"
@@ -11,8 +10,6 @@ import (
 	"chat_go/client/chatclient/mocks"
 
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-
 )
 
 func TestUnitNewClient(t *testing.T) {
@@ -27,9 +24,7 @@ func TestUnitNewClient(t *testing.T) {
 // Tests 'GetUsers' method. 
 func TestGetUsers(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
 
-	mockClientConn := &grpc.ClientConn{}
 	mockChatClient := mocks.ChatClientMock{}
 
 	mockGetUsersReply := &pb.GetUsersReply{
@@ -39,7 +34,7 @@ func TestGetUsers(t *testing.T) {
 		},
 	}
 	mockGetUsersRequest := &pb.GetUsersRequest{}
-	mockChatClient.On("GetUsers", ctx, mockGetUsersRequest).Return(mockGetUsersReply, nil)
+	mockChatClient.On("GetUsers", mockGetUsersRequest).Return(mockGetUsersReply, nil)
 
 	expectedUsers :=  []*pb.User{
 			{Login: "user1", FullName: "u_user1"},
@@ -48,7 +43,6 @@ func TestGetUsers(t *testing.T) {
 
 	client := &Client{
 		Endpoint: "123",
-		conn:     mockClientConn,
 		client:   mockChatClient,
 	}
 	users, err := client.GetUsers()
@@ -61,9 +55,7 @@ func TestGetUsers(t *testing.T) {
 // Tests 'SendMessage' method. 
 func TestSendMessage(t *testing.T) {
 	assert := assert.New(t)
-	ctx := context.Background()
 
-	mockClientConn := &grpc.ClientConn{}
 	mockChatClient := mocks.ChatClientMock{}
 
 	m := &st.Message{
@@ -84,13 +76,12 @@ func TestSendMessage(t *testing.T) {
 		Status: m.LoginTo + " received message from " + m.LoginFrom,
 	}
 
-	mockChatClient.On("SendMessage", ctx, mockSendMessageRequest).Return(mockSendMessageReply, nil)
+	mockChatClient.On("SendMessage", mockSendMessageRequest).Return(mockSendMessageReply, nil)
 
 	expectedStatus :=  "userB received message from userA"
 
 	client := &Client{
 		Endpoint: "123",
-		conn:     mockClientConn,
 		client:   mockChatClient,
 	}
 	status, err := client.SendMessage(m)

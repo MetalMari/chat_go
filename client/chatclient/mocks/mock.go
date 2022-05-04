@@ -18,13 +18,13 @@ type ChatClientMock struct {
 
 // GetUsers provides a mock function with given fields: ctx, in, opts. 
 func (c ChatClientMock) GetUsers(ctx context.Context, in *pb.GetUsersRequest, opts ...grpc.CallOption) (*pb.GetUsersReply, error) {
-	args := c.Called(ctx, in)
+	args := c.Called(in)
 	return args.Get(0).(*pb.GetUsersReply), args.Error(1)
 }
 
 // SendMessage provides a mock function with given fields: ctx, in, opts. 
 func (c ChatClientMock) SendMessage(ctx context.Context, in *pb.SendMessageRequest, opts ...grpc.CallOption) (*pb.SendMessageReply, error) {
-	args := c.Called(ctx, in)
+	args := c.Called(in)
 	return args.Get(0).(*pb.SendMessageReply), args.Error(1)
 }
 
