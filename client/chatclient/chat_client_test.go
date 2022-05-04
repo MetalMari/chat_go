@@ -24,6 +24,7 @@ func TestUnitNewClient(t *testing.T) {
 	assert.Nil(err)
 }
 
+// Tests 'GetUsers' method. 
 func TestGetUsers(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
@@ -57,6 +58,7 @@ func TestGetUsers(t *testing.T) {
 	mockChatClient.AssertExpectations(t)
 }
 
+// Tests 'SendMessage' method. 
 func TestSendMessage(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
@@ -97,6 +99,3 @@ func TestSendMessage(t *testing.T) {
 	assert.Equal(expectedStatus, status, "Message status should be equal.")
 	mockChatClient.AssertExpectations(t)
 }
-
-
-
