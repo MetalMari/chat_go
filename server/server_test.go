@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	// "errors"
 	"fmt"
 
 	"reflect"
@@ -13,6 +14,7 @@ import (
 	st "chat_go/storage"
 
 	"github.com/stretchr/testify/assert"
+	// "google.golang.org/grpc"
 )
 
 // Tests 'GetUsers' method.
@@ -24,21 +26,17 @@ func TestGetUsers(t *testing.T) {
 		storage: storageMock,
 	}
 
-	loginList := []string{"user1", "user2"}
-	fullnameList := []string{"u_user1", "u_user2"}
-
-	var storageUsers []st.User
-
-	for i := 0; i < len(loginList); i++ {
-		storageUsers = append(storageUsers, st.User{Login: loginList[i], FullName: fullnameList[i]})
+	storageUsers := []st.User{
+	    {Login: "111", FullName: "u_111"},
+	    {Login: "222", FullName: "u_222"},
 	}
+
+	returnUsers := []*pb.User{
+	    {Login: "111", FullName: "u_111"},
+	    {Login: "222", FullName: "u_222"},
+	}
+
 	storageMock.On("GetUsers").Return(storageUsers, nil)
-
-	var returnUsers []*pb.User
-
-	for i := 0; i < len(loginList); i++ {
-		returnUsers = append(returnUsers, &pb.User{Login: loginList[i], FullName: fullnameList[i]})
-	}
 
 	expectedReply := &pb.GetUsersReply{Users: returnUsers}
 	mockGetUsersRequest := &pb.GetUsersRequest{}
