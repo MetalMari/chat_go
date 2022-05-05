@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"io"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -38,10 +39,16 @@ type Storage interface {
 type EtcdStorage struct {
 	Endpoints []string
 
-	storage clientv3.Client
+	storage EtcdClient
 }
 
 var _ Storage = &EtcdStorage{}
+
+// Base interface for creating etcd client. 
+type EtcdClient interface{
+	clientv3.KV
+	io.Closer
+}
 
 // NewEtcdStorage creates new Storage using etcd client/v3.
 func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage, error) {
@@ -52,7 +59,7 @@ func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &EtcdStorage{Endpoints: endpoints, storage: *cli}, nil
+	return &EtcdStorage{Endpoints: endpoints, storage: cli}, nil
 }
 
 // Close closes connection with etcd.
@@ -68,8 +75,8 @@ func (s *EtcdStorage) CreateUser(u User) error {
 	if err != nil {
 		panic(err)
 	}
-	s.storage.Put(ctx, k, string(v))
-	return nil
+	_, err = s.storage.Put(ctx, k, string(v))
+	return err
 }
 
 // GetUsers returns list of users.
@@ -102,9 +109,8 @@ func (s *EtcdStorage) CreateMessage(m Message) error {
 	if err != nil {
 		panic(err)
 	}
-	s.storage.Put(ctx, k, string(v))
-
-	return nil
+	_, err = s.storage.Put(ctx, k, string(v))
+	return err
 }
 
 // GetMessages returns list of messages for specific user.
