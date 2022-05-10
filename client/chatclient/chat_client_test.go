@@ -1,6 +1,8 @@
 package chatclient
 
 import (
+	"log"
+	"reflect"
 	"testing"
 
 	pb "chat_go/chat_protos"
@@ -10,18 +12,29 @@ import (
 	"chat_go/client/chatclient/mocks"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 )
 
+// Tests 'NewClient' method.
 func TestUnitNewClient(t *testing.T) {
 	assert := assert.New(t)
 
 	endpoint := "chat.endpoint"
-	_, err := NewClient(endpoint)
+
+	conn, err := grpc.Dial(endpoint, grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	expectedClient := &Client{Endpoint: endpoint, conn: conn, client: pb.NewChatClient(conn)}
+	client, err := NewClient(endpoint)
 
 	assert.Nil(err)
+	assert.Equal(reflect.TypeOf(expectedClient.client), reflect.TypeOf(client.client), "Type of client must be equal.")
+	assert.Equal(expectedClient.Endpoint, client.Endpoint, "Endpoint must be equal.")
 }
 
-// Tests 'GetUsers' method. 
+// Tests 'GetUsers' method.
 func TestGetUsers(t *testing.T) {
 	assert := assert.New(t)
 
@@ -36,10 +49,10 @@ func TestGetUsers(t *testing.T) {
 	mockGetUsersRequest := &pb.GetUsersRequest{}
 	mockChatClient.On("GetUsers", mockGetUsersRequest).Return(mockGetUsersReply, nil)
 
-	expectedUsers :=  []*pb.User{
-			{Login: "user1", FullName: "u_user1"},
-			{Login: "user2", FullName: "u_user2"},
-		}
+	expectedUsers := []*pb.User{
+		{Login: "user1", FullName: "u_user1"},
+		{Login: "user2", FullName: "u_user2"},
+	}
 
 	client := &Client{
 		Endpoint: "123",
@@ -52,7 +65,7 @@ func TestGetUsers(t *testing.T) {
 	mockChatClient.AssertExpectations(t)
 }
 
-// Tests 'SendMessage' method. 
+// Tests 'SendMessage' method.
 func TestSendMessage(t *testing.T) {
 	assert := assert.New(t)
 
@@ -60,15 +73,15 @@ func TestSendMessage(t *testing.T) {
 
 	m := &st.Message{
 		LoginFrom: "userA",
-		LoginTo: "userB",
-		Body: "Hello!",
+		LoginTo:   "userB",
+		Body:      "Hello!",
 	}
 
 	mockSendMessageRequest := &pb.SendMessageRequest{
 		Message: &pb.Message{
 			LoginFrom: m.LoginFrom,
-			LoginTo: m.LoginTo,
-			Body: m.Body,
+			LoginTo:   m.LoginTo,
+			Body:      m.Body,
 		},
 	}
 
@@ -78,7 +91,7 @@ func TestSendMessage(t *testing.T) {
 
 	mockChatClient.On("SendMessage", mockSendMessageRequest).Return(mockSendMessageReply, nil)
 
-	expectedStatus :=  "userB received message from userA"
+	expectedStatus := "userB received message from userA"
 
 	client := &Client{
 		Endpoint: "123",
