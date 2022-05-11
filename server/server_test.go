@@ -99,7 +99,8 @@ func TestFillUsers(t *testing.T) {
 
 	fillUsers(storage)
 
-	storage.AssertExpectations(t)
+	storage.AssertNumberOfCalls(t, "GetUsers", 1)
+	storage.AssertNumberOfCalls(t, "CreateUser", 4)
 }
 
 // Tests 'createStorage' method.
