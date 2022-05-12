@@ -16,6 +16,7 @@ import (
 
 const (
 	dialTimeout = 5 * time.Second
+	timeSleep   = 2 * time.Second
 )
 
 var (
@@ -52,21 +53,23 @@ func (s *server) SendMessage(ctx context.Context, in *pb.SendMessageRequest) (*p
 		LoginTo:   in.Message.LoginTo,
 		CreatedAt: created_at,
 		Body:      in.Message.Body}
-	s.storage.CreateMessage(m)
+	err := s.storage.CreateMessage(m)
 	statusMessage := in.Message.LoginTo + " received message from " + in.Message.LoginFrom
-	return &pb.SendMessageReply{Status: statusMessage}, nil
+	return &pb.SendMessageReply{Status: statusMessage}, err
 }
 
 // Subscribe returns stream of messages by subscription.
 func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeServer) error {
 	defer log.Printf("Finish subscription for user %v", resp.Login)
 	for {
+		log.Println("start")
 		messages, err := s.storage.GetMessages(resp.Login)
+		log.Println("end")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		for _, mes := range messages {
-			time.Sleep(2 * time.Second)
+			time.Sleep(timeSleep)
 			message := &pb.Message{
 				LoginFrom: mes.LoginFrom,
 				LoginTo:   mes.LoginTo,
@@ -76,7 +79,7 @@ func (s *server) Subscribe(resp *pb.SubscribeRequest, stream pb.Chat_SubscribeSe
 			if err := stream.Send(message); err != nil {
 				return err
 			}
-			_, err := s.storage.DeleteMessage(mes)
+			err := s.storage.DeleteMessage(mes)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -105,7 +108,10 @@ func fillUsers(stor st.Storage) {
 			login := fmt.Sprintf("user%d", i)
 			full_name := fmt.Sprintf("user%d_user%d", i, i)
 			user := st.User{Login: login, FullName: full_name}
-			stor.CreateUser(user)
+			err := stor.CreateUser(user)
+			if err != nil {
+				log.Fatalf("failed to save user: %v", err)
+			}
 		}
 	}
 }

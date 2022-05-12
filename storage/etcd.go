@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"io"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -31,17 +32,23 @@ type Storage interface {
 	GetMessages(login string) (messages []Message, err error)
 
 	// DeleteMessage deletes user-read messages.
-	DeleteMessage(m Message) (*clientv3.DeleteResponse, error)
+	DeleteMessage(m Message) error
 }
 
 // Base for creating etcd storages.
 type EtcdStorage struct {
 	Endpoints []string
 
-	storage clientv3.Client
+	storage EtcdClient
 }
 
 var _ Storage = &EtcdStorage{}
+
+// Base interface for creating etcd client. 
+type EtcdClient interface{
+	clientv3.KV
+	io.Closer
+}
 
 // NewEtcdStorage creates new Storage using etcd client/v3.
 func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage, error) {
@@ -52,7 +59,7 @@ func NewEtcdStorage(endpoints []string, dialTimeout time.Duration) (*EtcdStorage
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &EtcdStorage{Endpoints: endpoints, storage: *cli}, nil
+	return &EtcdStorage{Endpoints: endpoints, storage: cli}, nil
 }
 
 // Close closes connection with etcd.
@@ -68,8 +75,8 @@ func (s *EtcdStorage) CreateUser(u User) error {
 	if err != nil {
 		panic(err)
 	}
-	s.storage.Put(ctx, k, string(v))
-	return nil
+	_, err = s.storage.Put(ctx, k, string(v))
+	return err
 }
 
 // GetUsers returns list of users.
@@ -102,9 +109,8 @@ func (s *EtcdStorage) CreateMessage(m Message) error {
 	if err != nil {
 		panic(err)
 	}
-	s.storage.Put(ctx, k, string(v))
-
-	return nil
+	_, err = s.storage.Put(ctx, k, string(v))
+	return err
 }
 
 // GetMessages returns list of messages for specific user.
@@ -131,8 +137,9 @@ func (s *EtcdStorage) GetMessages(login string) (messages []Message, err error) 
 }
 
 // DeleteMessage deletes message from storage.
-func (s *EtcdStorage) DeleteMessage(m Message) (*clientv3.DeleteResponse, error) {
+func (s *EtcdStorage) DeleteMessage(m Message) error {
 	ctx := context.Background()
 	k := MESSAGE_PREFIX + m.LoginTo + m.LoginFrom + string(m.CreatedAt)
-	return s.storage.Delete(ctx, k)
+	_, err := s.storage.Delete(ctx, k)
+	return err
 }
