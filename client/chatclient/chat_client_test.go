@@ -1,6 +1,9 @@
 package chatclient
 
 import (
+	"context"
+	"io"
+	// "errors"
 	"log"
 	"reflect"
 	"testing"
@@ -101,5 +104,50 @@ func TestSendMessage(t *testing.T) {
 
 	assert.Nil(err)
 	assert.Equal(expectedStatus, status, "Message status should be equal.")
+	mockChatClient.AssertExpectations(t)
+}
+
+// Tests 'Subscribe' method.
+func TestSubscribe(t *testing.T) {
+	assert := assert.New(t)
+
+	mockChatClient := mocks.ChatClientMock{}
+
+	login := "userB"
+
+	mockStream := &mocks.Chat_SubscribeClient{}
+	messages := []*pb.Message{
+		{LoginFrom: "user1", LoginTo: "userB", CreatedAt: 1234, Body: "Hello!"},
+		{LoginFrom: "user2", LoginTo: "userB", CreatedAt: 4567, Body: "Hello!"},
+		{LoginFrom: "user3", LoginTo: "userB", CreatedAt: 1234, Body: "Hello!"},
+		{LoginFrom: "user4", LoginTo: "userB", CreatedAt: 4567, Body: "Hello!"},
+	}
+	for _, message := range messages{
+		mockStream.On("Recv").Return(message, nil).Once()
+	}
+
+	mockStream.On("Recv").Return(nil, io.EOF).Once()
+
+	mockSubscribeRequest := &pb.SubscribeRequest{Login: login}
+
+	mockChatClient.On("Subscribe", context.Background(), mockSubscribeRequest).Return(mockStream, nil)
+
+	client := &Client{
+		Endpoint: "123",
+		client:   mockChatClient,
+	}
+
+	channel := make(chan *pb.Message)
+
+	go client.Subscribe(login, channel)
+
+	var respMessages []*pb.Message
+
+	for message := range channel {
+		respMessages = append(respMessages, message)
+	}	
+
+	assert.Equal(messages, respMessages, "Lists of messages should be equal.")
+	mockStream.AssertNumberOfCalls(t, "Recv", 5)
 	mockChatClient.AssertExpectations(t)
 }
